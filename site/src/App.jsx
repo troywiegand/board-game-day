@@ -10,7 +10,6 @@ import {games as GAMES} from './games.js';
 import './App.css'
 
 function App() {
-  // const [count, setCount] = useState(0)
   const [messages, setMessages] = useState(["abc"])
   const [currentGame, setCurrentGame] = useState("");
   const [numberOfPlayers, setNumberOfPlayers] = useState([]);
@@ -108,7 +107,6 @@ function App() {
     useEffect(() => {
       socket.on('gameUpdate', (data) => {
         console.log({'gameUpdateData':data, currentGame})
-        console.log('refresh fuck')
 
         if(data.game===currentGame && data.score?.length>1){
           updateScore(data.score)
@@ -118,7 +116,7 @@ function App() {
 
   return (
     <>
-      <h1>Haley&apos;s Board Game Birthday</h1>
+      <h1>September Board Game Day</h1>
 
       {Object.keys(GAMES).map(loc=>(
         <div className='card location' key={loc} id={loc}>
@@ -137,16 +135,21 @@ function App() {
       ))}
 
       <>
-      <button onClick={createNewGame}>Create Score Tracker</button>
-      <button onClick={activateJoining}>Join Score Tracker</button>
-      {isJoining && <>
-        <p>Game Code: </p><input type="text" min={4} max={8} value={joinCode} onChange={updateJoinCode}></input>
-        <button onClick={joinGame}>Join This One</button>
-      </>}    
-      {currentGame && <>
-        Game Code: {currentGame}
-        <p>Players: </p><input type="number" min={2} max={12} value={numberOfPlayers} onChange={updateNumPlayers}></input>
-        <div className='score-holder'>
+      <div className='score-maker'> 
+        {currentGame && <>
+          <h2>Game Code: {currentGame}</h2>
+          <h2>Players: <input type="number" min={2} max={people.length} value={numberOfPlayers} onChange={updateNumPlayers}></input></h2>
+        </>}
+        {isJoining && <p>
+          <input type="text" min={4} max={8} value={joinCode} onChange={updateJoinCode}></input>
+          <button onClick={joinGame}>Join This One</button>
+        </p>}
+        <button className='game-button' onClick={createNewGame}>Create Score Tracker</button>
+        <button className='game-button' onClick={activateJoining}>Join Score Tracker</button>
+
+      </div>
+          
+      {currentGame && <div className='score-holder'>
         {
           score.length>0 && score.map((v)=>(
             <>
@@ -162,9 +165,7 @@ function App() {
           ))
         }
 
-        </div>
-
-      </>}
+        </div>}
       </>
       <br/>
       <br/>
