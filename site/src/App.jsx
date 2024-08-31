@@ -6,7 +6,7 @@ const nanoid = customAlphabet('QWERTYUIOPASDFGHJKLZXCVBNM', 4)
 import socketIO from 'socket.io-client';
 const socket = socketIO.connect(import.meta.env.VITE_SERVER);
 
-import GAMES from './games.json'
+import {games as GAMES} from './games.js';
 import './App.css'
 
 function App() {

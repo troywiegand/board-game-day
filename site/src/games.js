@@ -1,11 +1,11 @@
-{
+export const games = {
     "OFFICE": [
-        {
-            "gameName": "Lorcana",
-            "bggLink": "https://boardgamegeek.com/boardgame/369646/disney-lorcana",
-            "htpLink": "https://youtube.com/playlist?list=PLBaWAg4scIN5mbh9gz1rzDA6r66H2TPOB&si=EbcrV8FEtdUWr7a7",
-            "playerCount": "2-4"
-        },
+        // {
+        //     "gameName": "Lorcana",
+        //     "bggLink": "https://boardgamegeek.com/boardgame/369646/disney-lorcana",
+        //     "htpLink": "https://youtube.com/playlist?list=PLBaWAg4scIN5mbh9gz1rzDA6r66H2TPOB&si=EbcrV8FEtdUWr7a7",
+        //     "playerCount": "2-4"
+        // },
         {
             "gameName": "Lovelace & Babbage",
             "bggLink": "https://boardgamegeek.com/boardgame/257056/lovelace-babbage",
@@ -32,6 +32,12 @@
         }
     ],
     "LIVING ROOM": [
+        {
+            "gameName": "Panda Royale",
+            "bggLink": "https://boardgamegeek.com/boardgame/398996/panda-royale",
+            "htpLink": "https://www.youtube.com/watch?v=pi62WC-Zk7A&pp=ygUYaG93IHRvIHBsYXkgcGFuZGEgcm95YWxl",
+            "playerCount": "2-10"
+        },
         {
             "gameName": "Tokanoko",
             "bggLink": "https://boardgamegeek.com/boardgame/70919/takenoko",
@@ -125,4 +131,4 @@
             "playerCount": "2-5"
         }
     ]
-}
+};
