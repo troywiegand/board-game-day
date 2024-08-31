@@ -8,6 +8,7 @@ body {
   --location-color: #efb700;
   --game-color: #36a45e;
   --text-color: #ffc2fc;
+  --champion-color: #378cb0;
 
   background-color: var(--background-color);
   color: var(--text-color);
@@ -133,4 +134,16 @@ h2 {
 #score-number {
   background: transparent;
   width: 80%;
+}
+
+.leaderboard {
+    border-color: var(--champion-color);
+    background-color: var(--champion-color);  
+    border-radius: 30px;
+    width: 22vw;
+    height: fit-content;
+    margin:0px auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }

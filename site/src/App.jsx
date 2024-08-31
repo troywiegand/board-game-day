@@ -16,6 +16,8 @@ function App() {
   const [score, updateScore] = useState(0);
   const [isJoining, setIsJoining] = useState(false);
   const [joinCode, setJoinCode] = useState('');
+  const [scoredGame, setScoredGame] = useState('');
+  const [leaderboard, setLeaderboard] = useState([]);
 
   const people = JSON.parse(import.meta.env.VITE_PEOPLE)
 
@@ -77,10 +79,16 @@ function App() {
         updateScore(tempScore)
         socket.emit('game', {
           score: tempScore,
+          gameName: scoredGame,
           game: currentGame
         });
       }
     }
+
+    const selectGame = (e) => {
+      e.preventDefault();
+      setScoredGame(e.target.value);
+    };
 
     const activateJoining = () => {
       setIsJoining(!isJoining)
@@ -104,6 +112,13 @@ function App() {
       setIsJoining(false)
     }
 
+    const submitGame = () => {
+      socket.emit('submitGame', {
+        score,
+        scoredGame
+      });
+    }
+
     useEffect(() => {
       socket.on('gameUpdate', (data) => {
         console.log({'gameUpdateData':data, currentGame})
@@ -113,6 +128,13 @@ function App() {
         }
       });
     }, [currentGame, updateScore]);
+
+    useEffect(() => {
+      socket.on('leaderboardUpdate', (data) => {
+        console.log({'leaderboardData':data,})
+        setLeaderboard(data)
+      });
+    }, [setLeaderboard]);
 
   return (
     <>
@@ -138,7 +160,7 @@ function App() {
       <div className='score-maker'> 
         {currentGame && <>
           <h2>Game Code: {currentGame}</h2>
-          <h2>Players: <input type="number" min={2} max={people.length} value={numberOfPlayers} onChange={updateNumPlayers}></input></h2>
+          <h2>Players: <input type="number" min={1} max={people.length} value={numberOfPlayers} onChange={updateNumPlayers}></input></h2>
         </>}
         {isJoining && <p>
           <input type="text" min={4} max={8} value={joinCode} onChange={updateJoinCode}></input>
@@ -146,10 +168,15 @@ function App() {
         </p>}
         <button className='game-button' onClick={createNewGame}>Create Score Tracker</button>
         <button className='game-button' onClick={activateJoining}>Join Score Tracker</button>
-
+        <button className='game-button' onClick={submitGame}>Submit Game</button>
       </div>
           
       {currentGame && <div className='score-holder'>
+        <select onChange={selectGame} value={scoredGame} className="score">
+              {Object.values(GAMES).flat().map(x=>(
+                <option key={x.gameName} value={x.gameName}>{x.gameName}</option>
+              ))}
+        </select>
         {
           score.length>0 && score.map((v)=>(
             <>
@@ -167,13 +194,30 @@ function App() {
 
         </div>}
       </>
-      <br/>
-      <br/>
-      <br/>
-      {/*<p>Scan Me to Get to the Site</p>
+
+      <div className='leaderboard'>
+        <h2>Leaderboard</h2>
+        {
+          leaderboard.length>0 && <table>
+            <tr>
+              <th>Name</th><th>Score</th>
+            </tr>
+          {
+            leaderboard.map((l)=>(
+              <tr key={l.firstName}>
+                <td>{l.firstName}</td>
+                <td>{l.overallScore}</td>
+              </tr>
+            ))
+          }
+          </table>
+        }
+
+      </div>
+      <p>Scan Me to Get to the Site</p>
       <img className='pic' src='/frame.png'></img>      
       <p>Scan Me to Get to the Wifi</p>
-      <img className='pic' src='/wifi.png'></img>*/}
+      <img className='pic' src='/wifi.png'></img>
     </>
   )
 }

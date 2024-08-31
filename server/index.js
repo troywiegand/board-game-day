@@ -16,6 +16,8 @@ const socketIO = require('socket.io')(http, {
 });
 
 const games = {};
+// {name, points}
+const leaderboard = {};
 
 //Add this before the app.get() block
 socketIO.on('connection', (socket) => {
@@ -37,6 +39,22 @@ socketIO.on('connection', (socket) => {
             socketIO.emit('GameJoinStatus', {'game': data.game, 'score': games[data.game]});
         }
       });
+
+      socket.on('submitGame', (data)=>{
+        console.log(data)
+        const tempScore = JSON.parse(JSON.stringify(data.score));
+        tempScore.sort((x,y)=>y.score-x.score)
+        console.log(tempScore)
+        tempScore.forEach((person,i) => {
+          if(!!!leaderboard[person.name]){
+            leaderboard[person.name]= {firstName: person.name, overallScore: tempScore.length-i, gameList: [{game: data.scoredGame, rank: i}]};
+          } else {
+            leaderboard[person.name].overallScore = (leaderboard[person.name].overallScore||0)+tempScore.length-i;
+            leaderboard[person.name].gameList= [...leaderboard[person.name].gameList, {game: data.scoredGame, rank: i}];
+          }
+        });
+        socketIO.emit('leaderboardUpdate',Object.values(leaderboard).sort((x,y)=>y.overallScore-x.overallScore))
+      })
 
     socket.on('disconnect', () => {
       console.log('🔥: A user disconnected');
