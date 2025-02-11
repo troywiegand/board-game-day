@@ -4,11 +4,11 @@ body {
   --location-color: #79c9b0;
   --game-color: #ef467d; */
   /* September Colors */
-  --background-color: #943201;
-  --location-color: #efb700;
-  --game-color: #36a45e;
-  --text-color: #ffc2fc;
-  --champion-color: #378cb0;
+  --background-color: #6ec59d;
+  --location-color: #7b014d;
+  --game-color: #fc5948;
+  --text-color: #ffbccf;
+  --champion-color: #e5d6ae;
 
   background-color: var(--background-color);
   color: var(--text-color);

@@ -19,10 +19,49 @@ function App() {
   const [scoredGame, setScoredGame] = useState('');
   const [leaderboard, setLeaderboard] = useState([]);
 
-  const people = JSON.parse(import.meta.env.VITE_PEOPLE)
+  const [people,setPeople] = useState(JSON.parse(import.meta.env.VITE_PEOPLE));
+
+  useEffect(() => {
+
+    socket.on('players', (data) => {
+      console.log(data);
+      setPeople(data);
+    })
+  
+    socket.on('GameJoinStatus', (data) => {
+      console.log({'GameJoinData':data, currentGame})
+      if(data.game===joinCode){
+        updateScore(data.score)
+      }
+    });
+  
+    socket.on('leaderboardUpdate', (data) => {
+      console.log({'leaderboardData':data,})
+      setLeaderboard(data)
+    });
+  
+    socket.on('gameUpdate', (data) => {
+      console.log({'gameUpdateData':data, currentGame})
+  
+      console.log(currentGame)
+      if(data.game===currentGame && data.score?.length>1){
+        updateScore(data.score)
+      }
+    });
+
+    return () => {
+      socket.off('players');
+      socket.off('GameJoinStatus');
+      socket.off('leaderboardUpdate');
+      socket.off('gameUpdate');
+    };
+  }, []);
+
+
 
   useEffect(() => {
     socket.on('messageResponse', (data) => setMessages([...messages, data]));
+    console.log(messages)
   }, [messages]);
 
     const createNewGame = (e) => {
@@ -103,42 +142,24 @@ function App() {
       socket.emit('tryToJoinGame', {
         game: joinCode
       });
-      socket.on('GameJoinStatus', (data) => {
-        console.log({'GameJoinData':data, currentGame})
-        if(data.game===joinCode){
-          updateScore(data.score)
-        }
-      });
       setIsJoining(false)
     }
 
     const submitGame = () => {
-      socket.emit('submitGame', {
-        score,
-        scoredGame
-      });
+      if(score.map(x=>x.name).every(x=>people.includes(x))){
+        socket.emit('submitGame', {
+          score,
+          scoredGame
+        });
+      } else {
+        // Give warning that we did not submit
+      }
     }
 
-    useEffect(() => {
-      socket.on('gameUpdate', (data) => {
-        console.log({'gameUpdateData':data, currentGame})
-
-        if(data.game===currentGame && data.score?.length>1){
-          updateScore(data.score)
-        }
-      });
-    }, [currentGame, updateScore]);
-
-    useEffect(() => {
-      socket.on('leaderboardUpdate', (data) => {
-        console.log({'leaderboardData':data,})
-        setLeaderboard(data)
-      });
-    }, [setLeaderboard]);
 
   return (
     <>
-      <h1>September Board Game Day</h1>
+      <h1>February Board Game Day (Haley&apos;s Birthday)</h1>
 
       {Object.keys(GAMES).map(loc=>(
         <div className='card location' key={loc} id={loc}>
@@ -182,6 +203,7 @@ function App() {
             <>
             <div key={v.player} className="card score">
             <select onChange={selectName(v.player)} value={v.name} id="realname" name="name">
+              <option>Pick Person</option>
               {people.map(x=>(
                 <option key={x} value={x}>{x}</option>
               ))}
