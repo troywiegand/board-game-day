@@ -24,7 +24,7 @@ function App() {
   useEffect(() => {
 
     socket.on('players', (data) => {
-      console.log(data);
+      console.log({'players':data});
       setPeople(data);
     })
   
@@ -42,10 +42,9 @@ function App() {
   
     socket.on('gameUpdate', (data) => {
       console.log({'gameUpdateData':data, currentGame})
-  
-      console.log(currentGame)
-      if(data.game===currentGame && data.score?.length>1){
+        if(data.game===currentGame && data.score?.length>1){
         updateScore(data.score)
+        setScoredGame(data.gameName)
       }
     });
 
@@ -55,13 +54,13 @@ function App() {
       socket.off('leaderboardUpdate');
       socket.off('gameUpdate');
     };
-  }, []);
+  }, [currentGame, joinCode]);
 
 
 
   useEffect(() => {
     socket.on('messageResponse', (data) => setMessages([...messages, data]));
-    console.log(messages)
+    console.log({messages})
   }, [messages]);
 
     const createNewGame = (e) => {
@@ -70,7 +69,7 @@ function App() {
     }
 
     const updateNumPlayers = (e) => {
-      console.log(score)
+      console.log({score})
       setNumberOfPlayers(e.target.value)
     }
 
@@ -105,7 +104,8 @@ function App() {
         updateScore(tempScore)
         socket.emit('game', {
           score: tempScore,
-          game: currentGame
+          game: currentGame,
+          scoredGame
         });
       }
     }
@@ -127,6 +127,11 @@ function App() {
     const selectGame = (e) => {
       e.preventDefault();
       setScoredGame(e.target.value);
+        socket.emit('game', {
+        score,
+        gameName: e.target.value,
+        game: currentGame
+      });
     };
 
     const activateJoining = () => {
@@ -146,9 +151,10 @@ function App() {
     }
 
     const submitGame = () => {
+      console.log({score,scoredGame})
       if(score.map(x=>x.name).every(x=>people.includes(x))){
         socket.emit('submitGame', {
-          score,
+          score: score,
           scoredGame
         });
       } else {
@@ -156,10 +162,15 @@ function App() {
       }
     }
 
+    const renderLastWinnerName = (s) => {
+      const lastWinner='Ash';
+      return s===lastWinner?`${lastWinner}👑`:s
+    }
+
 
   return (
     <>
-      <h1>February Board Game Day (Haley&apos;s Birthday)</h1>
+      <h1>Board Game Day 3 (Haley&apos;s Birthday)</h1>
 
       {Object.keys(GAMES).map(loc=>(
         <div className='card location' key={loc} id={loc}>
@@ -205,7 +216,7 @@ function App() {
             <select onChange={selectName(v.player)} value={v.name} id="realname" name="name">
               <option>Pick Person</option>
               {people.map(x=>(
-                <option key={x} value={x}>{x}</option>
+                <option key={x} value={x}>{renderLastWinnerName(x)}</option>
               ))}
             </select>
             <input id='score-number' type="number" value={v.score} onChange={updatePlayerScore(v.player)}></input>
@@ -226,9 +237,9 @@ function App() {
             </tr>
           {
             leaderboard.map((l)=>(
-              <tr key={l.firstName}>
-                <td>{l.firstName}</td>
-                <td>{l.overallScore}</td>
+              <tr key={l.player}>
+                <td>{l.player}</td>
+                <td>{l.score}</td>
               </tr>
             ))
           }
@@ -237,9 +248,7 @@ function App() {
 
       </div>
       <p>Scan Me to Get to the Site</p>
-      <img className='pic' src='/frame.png'></img>      
-      <p>Scan Me to Get to the Wifi</p>
-      <img className='pic' src='/wifi.png'></img>
+      <img className='pic' src='/frame.png'></img>
     </>
   )
 }

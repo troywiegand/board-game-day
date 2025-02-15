@@ -113,11 +113,17 @@ export const games = {
         //     "htpLink": "https://www.youtube.com/watch?v=APiugylcAJw",
         //     "playerCount": "5-10"
         // },
+        // {
+        //     "gameName": "Smash Up",
+        //     "bggLink": "https://boardgamegeek.com/boardgame/122522/smash",
+        //     "htpLink": "https://www.youtube.com/watch?v=OrCunWxR3dg&pp=ygUUaG93IHRvIHBsYXkgc21hc2ggdXA%3D",
+        //     "playerCount": "2-5"
+        // },        
         {
-            "gameName": "Smash Up",
-            "bggLink": "https://boardgamegeek.com/boardgame/122522/smash",
-            "htpLink": "https://www.youtube.com/watch?v=OrCunWxR3dg&pp=ygUUaG93IHRvIHBsYXkgc21hc2ggdXA%3D",
-            "playerCount": "2-5"
+            "gameName": "7 Wonders",
+            "bggLink": "https://boardgamegeek.com/boardgame/68448/7-wonders",
+            "htpLink": "",
+            "playerCount": "2-7"
         },
         // {
         //     "gameName": "Dungeon Mayhem",

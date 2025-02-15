@@ -34,8 +34,12 @@ const leaderboard = {};
 //Add this before the app.get() block
 socketIO.on('connection', async (socket) => {
     console.log(`⚡: ${socket.id} user just connected!`);
-    players = await db.all('SELECT player FROM scores');
+    players = await db.all('SELECT player FROM leaderboard');
     socketIO.emit('players', players.map(x=>x.player));
+    // Trigger Leaderboard Update on Clients
+    mostRecentScore = await db.all('SELECT * FROM leaderboard');
+    console.log(mostRecentScore)
+    socketIO.emit('leaderboardUpdate',mostRecentScore.sort((x,y)=>y.score-x.score))
 
       socket.on('message', (data) => {
         socketIO.emit('messageResponse', data.text); 
@@ -55,23 +59,42 @@ socketIO.on('connection', async (socket) => {
       });
 
       socket.on('submitGame', async (data)=>{
-        console.log(data)
+        // Sort Players into Game Score Buckets
         const tempScore = JSON.parse(JSON.stringify(data.score));
-        mostRecentScore = await db.all('SELECT * FROM scores');
-        tempScore.sort((x,y)=>y.score-x.score)
-        console.log(tempScore)
-        tempScore.forEach(async (person,i) => {
-          if(!!!leaderboard[person.name]){
-            leaderboard[person.name]= {firstName: person.name, overallScore: tempScore.length-i, gameList: [{game: data.scoredGame, rank: i}]};
+        const scoreDic = {};
+        tempScore.forEach(x=>{
+          if(x.score in scoreDic){
+            scoreDic[x.score].push(x.name);
           } else {
-            leaderboard[person.name].overallScore = (leaderboard[person.name].overallScore||0)+tempScore.length-i;
-            leaderboard[person.name].gameList= [...leaderboard[person.name].gameList, {game: data.scoredGame, rank: i}];
+            scoreDic[x.score] = [x.name];
           }
-          let dbEntry = mostRecentScore.find(x=>x.player===person.name);
-          await db.exec(`UPDATE scores SET score=${dbEntry.score+tempScore.length-i} WHERE player="${dbEntry.player}"`);
+        })
+
+        // Determine Leaderboard Scoring Based on Score Buckets
+        let bucketScore = tempScore.length;
+        Object.keys(scoreDic).sort((x,y)=>parseInt(y)-parseInt(x)).forEach(scoreTier=>{
+          scoreDic[scoreTier].forEach(player=>{
+            const i = tempScore.findIndex(x=>x.name===player);
+            tempScore[i]= {...tempScore[i], leaderboardPointsEarned: bucketScore}
+          })
+          bucketScore -= scoreDic[scoreTier].length;
+        })
+
+        // Record Game Audit
+        const q = `INSERT INTO playedGames (Game, "TimeStamp", ScoreObject) VALUES ('${data?.scoredGame || 'empty'}',"${Date.now()}",'${JSON.stringify(tempScore)}');`;
+        await db.exec(q);
+        
+        // Determine Leaderboard Scores
+        let recentScore = await db.all('SELECT * FROM leaderboard');
+        tempScore.forEach(async (person,i) => {
+          let dbEntry = recentScore.find(x=>x.player===person.name);
+          await db.exec(`UPDATE leaderboard SET score=${dbEntry.score+person.leaderboardPointsEarned} WHERE player="${dbEntry.player}"`);
         });
 
-        socketIO.emit('leaderboardUpdate',Object.values(leaderboard).sort((x,y)=>y.overallScore-x.overallScore))
+        // Trigger Leaderboard Update on Clients
+        mostRecentScore = await db.all('SELECT * FROM leaderboard');
+        console.log(mostRecentScore)
+        socketIO.emit('leaderboardUpdate',mostRecentScore.sort((x,y)=>y.score-x.score))
       })
 
     socket.on('disconnect', () => {
