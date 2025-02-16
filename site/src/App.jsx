@@ -2,14 +2,10 @@ import { useState, useEffect } from 'react'
 import { customAlphabet } from 'nanoid'
 const nanoid = customAlphabet('QWERTYUIOPASDFGHJKLZXCVBNM', 4)
 
-
-import socketIO from 'socket.io-client';
-const socket = socketIO.connect(import.meta.env.VITE_SERVER);
-
 import {games as GAMES} from './games.js';
 import './App.css'
 
-function App() {
+function App({socket}) {
   const [messages, setMessages] = useState(["abc"])
   const [currentGame, setCurrentGame] = useState("");
   const [numberOfPlayers, setNumberOfPlayers] = useState([]);
@@ -200,7 +196,6 @@ function App() {
         </p>}
         <button className='game-button' onClick={createNewGame}>Create Score Tracker</button>
         <button className='game-button' onClick={activateJoining}>Join Score Tracker</button>
-        <button className='game-button' onClick={submitGame}>Submit Game</button>
       </div>
           
       {currentGame && <div className='score-holder'>
@@ -224,7 +219,7 @@ function App() {
             </>
           ))
         }
-
+          <button className='game-button submit' onClick={submitGame}>Submit Game</button>
         </div>}
       </>
 

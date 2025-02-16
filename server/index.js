@@ -18,6 +18,7 @@ const PORT = 4000;
 //New imports
 const http = require('http').Server(app);
 const cors = require('cors');
+const { Socket } = require('socket.io');
 
 app.use(cors());
 
@@ -30,12 +31,16 @@ const socketIO = require('socket.io')(http, {
 const games = {};
 // {name, points}
 const leaderboard = {};
-
+let GTW_PLAYERS = {};
 //Add this before the app.get() block
 socketIO.on('connection', async (socket) => {
+    let thisGTW = '';
     console.log(`⚡: ${socket.id} user just connected!`);
     players = await db.all('SELECT player FROM leaderboard');
     socketIO.emit('players', players.map(x=>x.player));
+    socketIO.emit('gtw - players', players.map(x=>x.player));
+    socketIO.emit('gtw - send', []);
+
     // Trigger Leaderboard Update on Clients
     mostRecentScore = await db.all('SELECT * FROM leaderboard');
     console.log(mostRecentScore)
@@ -97,8 +102,45 @@ socketIO.on('connection', async (socket) => {
         socketIO.emit('leaderboardUpdate',mostRecentScore.sort((x,y)=>y.score-x.score))
       })
 
+      socket.on('gtw - join', (data) => {
+        GTW_PLAYERS[data.player] = {'player': data.player, 'thisRooundAnswer':'', score: 0, 'lastTeam': 'Orange'};
+        thisGTW=data.player
+        console.log(GTW_PLAYERS)
+      })
+
+      socket.on('gtw - collect', (data)=>{
+        GTW_PLAYERS[thisGTW]['thisRoundAnswer'] = data.thisRoundAnswer;
+        console.log(data);
+      })
+
+      socket.on('gtw - round end', (data)=>{
+        const thisRoundAnswer = Object.values(GTW_PLAYERS).map(x=>x.thisRoundAnswer).sort();
+        console.log('round end:',thisRoundAnswer);
+        socketIO.emit('gtw - send', thisRoundAnswer);
+      })
+
+      socket.on('gtw - round score', (data)=> {
+        if(data.team === 'Green'){
+          if(GTW_PLAYERS[thisGTW].lastTeam === 'Green'){
+            GTW_PLAYERS[thisGTW].score += 2;
+          } else {
+            GTW_PLAYERS[thisGTW].score += 1;
+          }
+          GTW_PLAYERS[thisGTW].lastTeam = 'Green'
+        } else {
+          GTW_PLAYERS[thisGTW].lastTeam = 'Orange' 
+        }
+        socketIO.emit('gtw - leaderboard', GTW_PLAYERS);
+      })
+
+      socket.on('gtw - round start', (data)=>{
+        console.log('STARTING NEW ROUND: scores');
+        socketIO.emit('gtw - reset round');
+      })
+
     socket.on('disconnect', () => {
-      console.log('🔥: A user disconnected');
+      console.log('🔥: A user disconnected',thisGTW);
+      delete GTW_PLAYERS[thisGTW];
     });
 });
 

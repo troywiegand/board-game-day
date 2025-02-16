@@ -32,12 +32,12 @@ export const games = {
         // }
     ],
     "Round 2 - Appetizer": [
-        {
-            "gameName": "Lovelace & Babbage",
-            "bggLink": "https://boardgamegeek.com/boardgame/257056/lovelace-babbage",
-            "htpLink": "https://www.youtube.com/watch?v=RAUKzeukm1w&pp=ygUSbG92ZWxhY2UgJiBiYWJiYWdl",
-            "playerCount": "2-4"
-        },        
+        // {
+        //     "gameName": "Lovelace & Babbage",
+        //     "bggLink": "https://boardgamegeek.com/boardgame/257056/lovelace-babbage",
+        //     "htpLink": "https://www.youtube.com/watch?v=RAUKzeukm1w&pp=ygUSbG92ZWxhY2UgJiBiYWJiYWdl",
+        //     "playerCount": "2-4"
+        // },        
         {
             "gameName": "Gnome Hollow",
             "bggLink": "https://boardgamegeek.com/boardgame/332885/gnome-hollow",

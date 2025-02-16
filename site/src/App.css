@@ -87,8 +87,8 @@ h2 {
 }
 
 .htp {
-  background-color: #aa2397;
-  color: #ED1D25;
+  background-color: var(--champion-color);
+  color: white;
 }
 
 .game > h3 {
@@ -138,6 +138,18 @@ select.score {
   margin: 1.5rem 20vw;
   flex: 80%;
   text-align: ceter;
+}
+
+.game-button.submit { 
+  border-color: var(--game-color);
+  background-color: var(--game-color); 
+  color: var(--text-color);
+  margin: 1.5rem 20vw;
+  flex: 40%;
+  text-align: ceter;
+  justify-content: center;
+  height: 2.3rem;
+  font-size: 22px;
 }
 
 #realname {
