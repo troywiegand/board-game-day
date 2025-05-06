@@ -20,11 +20,15 @@ const http = require('http').Server(app);
 const cors = require('cors');
 const { Socket } = require('socket.io');
 
+corsSite = process.env.SITE;
+
+console.log(corsSite);
+
 app.use(cors());
 
 const socketIO = require('socket.io')(http, {
     cors: {
-        origin: process.env.SITE
+        origin: corsSite
     }
 });
 

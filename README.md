@@ -29,3 +29,10 @@ The site requires 2 ENV VARs to be passed:
 ### Server
 
 The server requires an ENV VAR of `SITE`, a string of the URL of the site for CORS.
+
+## TO-DO
+
+- [ ] Have GTW use sqlite
+- [ ] Finish Home Page For Centralized User Auth
+- [ ] Implement Home Bar to interact with Settings
+- [ ] Enable passing Admin controls for GTW
