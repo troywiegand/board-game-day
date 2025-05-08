@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-function Gtw({socket}) {
+function Gtw({socket, user}) {
 
     const [people,setPeople] = useState(JSON.parse(import.meta.env.VITE_PEOPLE));
-    const [whoAmI,setWhoAmI] = useState('');
-    const [inTheGame, setInTheGame] = useState(false);
+    const [whoAmI,setWhoAmI] = useState(user || '');
+    const [inTheGame, setInTheGame] = useState(user || false);
     const [thisRoundAnswer, setThisRoundAnswer] = useState('');
     const [roundAnswers, setRoundAnswers] = useState([]);
     const [leaderboard, setLeaderboard] = useState([]);
@@ -87,7 +87,7 @@ function Gtw({socket}) {
 
 
         {inTheGame && <><div className="score-maker">
-            <p>Playing as {whoAmI} on the {currentTeam} Team</p>
+            <p>{user?'O':`Playing as ${whoAmI} o`}n the {currentTeam} Team</p>
             {inTheGame && (whoAmI==='Troy' || whoAmI==='Haley') && <>
             <button onClick={startRound}>Start Round</button><button  onClick={endRound} >Show Answers</button>
             </>}
