@@ -27,6 +27,8 @@ function Home({socket, loggedInAs, setLoggedInAs}) {
             <Link to='/games'><div className='card game'><h2>Games List</h2></div></Link>
             <Link to='/gtw'><div className='card game'><h2>Green Team Wins</h2></div></Link>
         </div>
+      <p>Scan Me to Get to the Site</p>
+      <img className='pic' src='/frame.png'></img>
     </>)
     // TO-DO: Render Other players logged in
 }

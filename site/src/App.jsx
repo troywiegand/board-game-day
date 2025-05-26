@@ -166,7 +166,7 @@ function App({socket}) {
 
   return (
     <>
-      <h1>Board Game Day 3 (Haley&apos;s Birthday)</h1>
+      <h1>Board Game Day Game List</h1>
 
       {Object.keys(GAMES).map(loc=>(
         <div className='card location' key={loc} id={loc}>
@@ -242,8 +242,6 @@ function App({socket}) {
         }
 
       </div>
-      <p>Scan Me to Get to the Site</p>
-      <img className='pic' src='/frame.png'></img>
     </>
   )
 }

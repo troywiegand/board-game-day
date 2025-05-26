@@ -5,7 +5,7 @@ function HomeBar({loggedInAs, setLoggedInAs}){
     //TO-DO: Render Score
 
     return (<>
-        <div className='card'>
+        <div className='card location bar'>
             <Link to='/'><div className='card'>Home</div></Link>
             {loggedInAs && <>
                 <p> Hello, {loggedInAs}! </p>

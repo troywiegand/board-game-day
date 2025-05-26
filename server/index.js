@@ -36,13 +36,16 @@ const games = {};
 // {name, points}
 const leaderboard = {};
 let GTW_PLAYERS = {};
+let BGD_PLAYERS = {};
 //Add this before the app.get() block
 socketIO.on('connection', async (socket) => {
     let thisGTW = '';
+    let thisBGD = '';
     console.log(`⚡: ${socket.id} user just connected!`);
     players = await db.all('SELECT player FROM leaderboard');
     socketIO.emit('players', players.map(x=>x.player));
     socketIO.emit('gtw - players', players.map(x=>x.player));
+    socketIO.emit('bgd - players', Object.keys(BGD_PLAYERS));
     socketIO.emit('gtw - send', []);
 
     // Trigger Leaderboard Update on Clients
@@ -106,6 +109,13 @@ socketIO.on('connection', async (socket) => {
         socketIO.emit('leaderboardUpdate',mostRecentScore.sort((x,y)=>y.score-x.score))
       })
 
+      socket.on('bgd - login', (data) => {
+        BGD_PLAYERS[data.player] = {'player': data.player, score: 0};
+        thisBGD=data.player;
+        console.log(BGD_PLAYERS);
+        socketIO.emit('bgd - players', Object.keys(BGD_PLAYERS));
+      })
+      
       socket.on('gtw - join', (data) => {
         GTW_PLAYERS[data.player] = {'player': data.player, 'thisRooundAnswer':'', score: 0, 'lastTeam': 'Orange'};
         thisGTW=data.player

@@ -22,6 +22,7 @@ body {
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  height: 94vh;
 }
 
 h1 {
@@ -173,4 +174,8 @@ select.score {
     flex-direction: column;
     justify-content: space-between;
     padding-bottom: 3vh;
+}
+
+.card.location.bar {
+    margin-bottom: -1vh;
 }
