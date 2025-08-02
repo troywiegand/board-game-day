@@ -4,11 +4,12 @@ body {
   --location-color: #79c9b0;
   --game-color: #ef467d; */
   /* September Colors */
-  --background-color: #6ec59d;
-  --location-color: #7b014d;
-  --game-color: #fc5948;
-  --text-color: #ffbccf;
-  --champion-color: #514f8d;
+  --background-color: #39b5ff;
+  --location-color: #cf0128;
+  --game-color: #f9c13b;
+  //--text-color: #fcf0d9;
+  --text-color: #031B2F;
+  --champion-color: #516DAF;
 
   background-color: var(--background-color);
   color: var(--text-color);
@@ -30,7 +31,7 @@ h1 {
 }
 
 h2 {
-  text-shadow: 0px 0px 12px black;
+  //text-shadow: 0px 0px 12px black;
 }
 
 .card {
@@ -83,13 +84,13 @@ h2 {
 }
 
 .bgg {
-  background-color: #3e3b60;
-  color: #ff5001;
+  background-color: var(--location-color);
+  color: var(--text-color);
 }
 
 .htp {
   background-color: var(--champion-color);
-  color: white;
+  color: var(--text-color);
 }
 
 .game > h3 {

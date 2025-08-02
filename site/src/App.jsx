@@ -15,7 +15,7 @@ function App({socket}) {
   const [scoredGame, setScoredGame] = useState('');
   const [leaderboard, setLeaderboard] = useState([]);
 
-  const [people,setPeople] = useState(JSON.parse(import.meta.env.VITE_PEOPLE));
+  const [people,setPeople] = useState([]);
 
   useEffect(() => {
 
@@ -177,7 +177,7 @@ function App({socket}) {
             {game.playerCount && <p>Players: {game.playerCount}</p>}
               <div>
               <a href={game.bggLink} target='_blank' rel='noreferrer' className='game-button bgg'>BGG</a>
-              <a href={game.htpLink} target='_blank' rel='noreferrer' className='game-button htp'>HTP</a>
+              <a href={game.htpLink} target='_blank' rel='noreferrer' className='game-button htp'>How-To</a>
             </div>
           </div>
         ))}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 function Gtw({socket, user}) {
 
-    const [people,setPeople] = useState(JSON.parse(import.meta.env.VITE_PEOPLE));
+    const [people,setPeople] = useState([]);
     const [whoAmI,setWhoAmI] = useState(user || '');
     const [inTheGame, setInTheGame] = useState(user || false);
     const [thisRoundAnswer, setThisRoundAnswer] = useState('');
