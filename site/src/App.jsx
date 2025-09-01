@@ -5,7 +5,7 @@ const nanoid = customAlphabet('QWERTYUIOPASDFGHJKLZXCVBNM', 4)
 import {games as GAMES} from './games.js';
 import './App.css'
 
-function App({socket}) {
+function App({socket, possiblePlayers}) {
   const [messages, setMessages] = useState(["abc"])
   const [currentGame, setCurrentGame] = useState("");
   const [numberOfPlayers, setNumberOfPlayers] = useState([]);
@@ -15,14 +15,7 @@ function App({socket}) {
   const [scoredGame, setScoredGame] = useState('');
   const [leaderboard, setLeaderboard] = useState([]);
 
-  const [people,setPeople] = useState([]);
-
   useEffect(() => {
-
-    socket.on('players', (data) => {
-      console.log({'players':data});
-      setPeople(data);
-    })
   
     socket.on('GameJoinStatus', (data) => {
       console.log({'GameJoinData':data, currentGame})
@@ -45,19 +38,18 @@ function App({socket}) {
     });
 
     return () => {
-      socket.off('players');
       socket.off('GameJoinStatus');
       socket.off('leaderboardUpdate');
       socket.off('gameUpdate');
     };
-  }, [currentGame, joinCode]);
+  }, [currentGame, joinCode, socket]);
 
 
 
   useEffect(() => {
     socket.on('messageResponse', (data) => setMessages([...messages, data]));
     console.log({messages})
-  }, [messages]);
+  }, [messages, socket]);
 
     const createNewGame = (e) => {
       e.preventDefault();
@@ -148,7 +140,7 @@ function App({socket}) {
 
     const submitGame = () => {
       console.log({score,scoredGame})
-      if(score.map(x=>x.name).every(x=>people.includes(x))){
+      if(score.map(x=>x.name).every(x=>possiblePlayers.includes(x))){
         socket.emit('submitGame', {
           score: score,
           scoredGame
@@ -159,7 +151,7 @@ function App({socket}) {
     }
 
     const renderLastWinnerName = (s) => {
-      const lastWinner='Ash';
+      const lastWinner='Dave';
       return s===lastWinner?`${lastWinner}👑`:s
     }
 
@@ -188,7 +180,7 @@ function App({socket}) {
       <div className='score-maker'> 
         {currentGame && <>
           <h2>Game Code: {currentGame}</h2>
-          <h2>Players: <input type="number" min={1} max={people.length} value={numberOfPlayers} onChange={updateNumPlayers}></input></h2>
+          <h2>Players: <input type="number" min={1} max={possiblePlayers.length} value={numberOfPlayers} onChange={updateNumPlayers}></input></h2>
         </>}
         {isJoining && <p>
           <input type="text" min={4} max={8} value={joinCode} onChange={updateJoinCode}></input>
@@ -210,7 +202,7 @@ function App({socket}) {
             <div key={v.player} className="card score">
             <select onChange={selectName(v.player)} value={v.name} id="realname" name="name">
               <option>Pick Person</option>
-              {people.map(x=>(
+              {possiblePlayers.map(x=>(
                 <option key={x} value={x}>{renderLastWinnerName(x)}</option>
               ))}
             </select>

@@ -7,7 +7,7 @@ body {
   --background-color: #39b5ff;
   --location-color: #cf0128;
   --game-color: #f9c13b;
-  //--text-color: #fcf0d9;
+  /* //--text-color: #fcf0d9; */
   --text-color: #031B2F;
   --champion-color: #516DAF;
 
@@ -23,16 +23,16 @@ body {
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-  height: 94vh;
+  height: max(100,94vh);
 }
 
 h1 {
   font-family: 'Pacifico', cursive;
 }
 
-h2 {
+/* h2 {
   //text-shadow: 0px 0px 12px black;
-}
+} */
 
 .card {
   border: 3px solid;
@@ -179,4 +179,8 @@ select.score {
 
 .card.location.bar {
     margin-bottom: -1vh;
+}
+
+.card .game {
+  color: var(--champion-color);
 }

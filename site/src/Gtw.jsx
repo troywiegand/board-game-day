@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
+import { Link } from 'react-router';
+
 function Gtw({socket, user}) {
 
-    const [people,setPeople] = useState([]);
-    const [whoAmI,setWhoAmI] = useState(user || '');
     const [inTheGame, setInTheGame] = useState(user || false);
     const [thisRoundAnswer, setThisRoundAnswer] = useState('');
     const [roundAnswers, setRoundAnswers] = useState([]);
@@ -11,11 +11,6 @@ function Gtw({socket, user}) {
     const [canSubmitScore, setCanSubmitScore] = useState(false);
 
     useEffect(()=>{
-        socket.on('gtw - players', (data) => {
-            console.log({'players':data});
-            setPeople(data);
-        })
-
         socket.on('gtw - send', (data) => {
             console.log('getting answers')
             console.log(data);
@@ -23,7 +18,7 @@ function Gtw({socket, user}) {
             setCanSubmitScore(true);
         })
 
-        socket.on('gtw - leaderboard', (data) => {
+        socket.on('gtw - leaderboardUpdate', (data) => {
             console.log('LEADERBOARD: ',data,Object.values(data))
             setLeaderboard(Object.values(data))
         })
@@ -34,19 +29,19 @@ function Gtw({socket, user}) {
         })
 
         return () => {
-            socket.off('gtw - players');
             socket.off('gtw - send');
             socket.off('gtw - leaderboard');
             socket.off('gtw - reset round');
         };
-    },[setPeople,setRoundAnswers,setLeaderboard])
+    },[socket,setRoundAnswers,setLeaderboard])
 
-    const joinTheGame = () => {
+
+    useEffect(()=>{
         socket.emit('gtw - join', {
-            player: whoAmI
+            player: user
         });
         setInTheGame(true);
-    }
+    },[socket,user]);
 
     const submitRoundAnswer = () => {
         socket.emit('gtw - collect',{thisRoundAnswer});
@@ -63,7 +58,7 @@ function Gtw({socket, user}) {
     const scoreAnswer = (gOrO) => {
         return () => {
             setCurrentTeam(gOrO);
-            socket.emit('gtw - round score', {player: whoAmI, team: gOrO});
+            socket.emit('gtw - round score', {player: user, team: gOrO});
             setCanSubmitScore(false);
         }
     }
@@ -71,25 +66,16 @@ function Gtw({socket, user}) {
     return (<>
         <h1>Green Team Wins</h1>
         {!inTheGame && <>
-            <div className='score-maker'>
-
-            <select onChange={e=>setWhoAmI(e.target.value)} value={whoAmI} id="realname" name="name">
-            <option>Pick Person</option>
-            {people.map(x=>(
-                <option key={x} value={x}>{x}</option>
-            ))}
-        </select>
-
-        <button className='game-button' onClick={joinTheGame}>Join the Game</button>
-
-        </div>
+            <Link to='/'><div className='card game'><h2>Log in at Home page</h2></div></Link>
         </>}
 
 
         {inTheGame && <><div className="score-maker">
-            <p>{user?'O':`Playing as ${whoAmI} o`}n the {currentTeam} Team</p>
-            {inTheGame && (whoAmI==='Troy' || whoAmI==='Haley') && <>
+            <p>On the {currentTeam} Team</p>
+            {inTheGame && (user==='Troy' || user==='Haley') && <>
+            <h3>Admin Controls</h3>
             <button onClick={startRound}>Start Round</button><button  onClick={endRound} >Show Answers</button>
+            <h3>Normal Game</h3>
             </>}
             <textarea value={thisRoundAnswer} onChange={e=>setThisRoundAnswer(e.target.value)}></textarea>
             <button onClick={submitRoundAnswer}>Submit Answer</button>

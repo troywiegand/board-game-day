@@ -3,18 +3,34 @@ import { Link } from 'react-router';
 function Home({socket, loggedInAs, setLoggedInAs}) {
 
     const [whoAmI,setWhoAmI] = useState('');
+    const [people,setPeople] = useState([]);
 
     const joinTheGame = () => {
         setLoggedInAs(whoAmI);
     };
+
+        useEffect(()=>{
+        socket.on('players', (data) => {
+            console.log({'players':data});
+            setPeople(data);
+        })
+
+        return () => {
+            socket.off('players');
+        };
+    },[setPeople, socket]);
 
     return (<>
         <h1>Game Day Home</h1>
         {!loggedInAs && <>
             <div className='score-maker'>
 
-        <input type='text' onChange={e=>setWhoAmI(e.target.value)} value={whoAmI} id="realname" name="name">
-        </input>
+            <select onChange={e=>setWhoAmI(e.target.value)} value={whoAmI} id="realname" name="name">
+            <option>Pick Person</option>
+            {people.map(x=>(
+                <option key={x} value={x}>{x}</option>
+            ))}
+        </select>
 
         <button className='game-button' onClick={joinTheGame}>Join the Game</button>
 

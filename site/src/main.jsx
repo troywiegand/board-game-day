@@ -6,6 +6,7 @@ import Gtw from './Gtw.jsx';
 import Home from './Home.jsx';
 import HomeBar from './HomeBar.jsx';
 import './index.css'
+import './App.css'
 
 import socketIO from 'socket.io-client';
 const socket = socketIO.connect(import.meta.env.VITE_SERVER);
@@ -23,6 +24,7 @@ function GameRoutes({socket}) {
 
     const [loggedInAs, setLoggedInAs] = useState('');
     const [activePlayers, setActivePlayers] = useState([]);
+    const [possiblePlayers, setPossiblePlayers] = useState([]);
 
     useEffect(() => {
 
@@ -31,12 +33,17 @@ function GameRoutes({socket}) {
             setActivePlayers(data);
         })
 
+        socket.on('players', (data) => {
+            console.log({possiblePlayers: data})
+            setPossiblePlayers(data);
+        })
+
         return () => {
             loggedInAs !== '' && socket.emit('bgd - logoff', {player: loggedInAs});
             socket.off('bgd - players');
         }
 
-    }, [setActivePlayers]);
+    }, [setActivePlayers, setPossiblePlayers, socket, loggedInAs]);
 
 
     const loginHelper = (name) => {
@@ -45,7 +52,7 @@ function GameRoutes({socket}) {
                 setLoggedInAs('');
             }
             else if (activePlayers.includes(name)){
-                alert(name, ' name already taken');
+                console.log(name, ' name already taken');
             } else {
                 socket.emit('bgd - login', {player: name});
                 setLoggedInAs(name);
@@ -56,10 +63,10 @@ function GameRoutes({socket}) {
       <HomeBar loggedInAs={loggedInAs} setLoggedInAs={loginHelper}/>
       <Routes>
         <Route path="/" element={<Home socket={socket} loggedInAs={loggedInAs} setLoggedInAs={loginHelper} />} />
-        <Route path="/games" element={<App socket={socket}/>} />
+        <Route path="/games" element={<App socket={socket} possiblePlayers={possiblePlayers} />} />
         <Route path="/gtw" element={<Gtw socket={socket} user={loggedInAs}/>} />
       </Routes>
-      <> // Active Players
+      <>
         {activePlayers.length > 0 && (<>
             <h1>Active Players</h1>
             <p>
