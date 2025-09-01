@@ -44,7 +44,6 @@ socketIO.on('connection', async (socket) => {
     console.log(`⚡: ${socket.id} user just connected!`);
     players = await db.all('SELECT player FROM leaderboard');
     socketIO.emit('players', players.map(x=>x.player));
-    socketIO.emit('gtw - players', players.map(x=>x.player));
     socketIO.emit('bgd - players', Object.keys(BGD_PLAYERS));
     socketIO.emit('gtw - send', []);
 
@@ -111,19 +110,25 @@ socketIO.on('connection', async (socket) => {
 
       socket.on('bgd - login', (data) => {
         BGD_PLAYERS[data.player] = {'player': data.player, score: 0};
+        GTW_PLAYERS[data.player] = {'player': data.player, score: 0, thisRoundAnswer: '', lastTeam: 'Orange'};
         thisBGD=data.player;
-        console.log(BGD_PLAYERS);
+        thisGTW=data.player;
+        console.log({BGD_PLAYERS});
         socketIO.emit('bgd - players', Object.keys(BGD_PLAYERS));
       })
       
-      socket.on('gtw - join', (data) => {
-        GTW_PLAYERS[data.player] = {'player': data.player, 'thisRooundAnswer':'', score: 0, 'lastTeam': 'Orange'};
+      socket.on('gtw - join', async (data) => {
+        let player = await db.all(`SELECT score FROM gtwleaderboard WHERE player="${data.player}"`);
+        GTW_PLAYERS[data.player] = {'player': data.player, 'thisRoundAnswer':'', score: player.score, 'lastTeam': player?.currentTeam || 'Orange'};
         thisGTW=data.player
         console.log(GTW_PLAYERS)
       })
 
       socket.on('gtw - collect', (data)=>{
+        console.log({data});
+        console.log({GTW_PLAYERS});
         GTW_PLAYERS[thisGTW]['thisRoundAnswer'] = data.thisRoundAnswer;
+
         console.log(data);
       })
 
@@ -133,18 +138,30 @@ socketIO.on('connection', async (socket) => {
         socketIO.emit('gtw - send', thisRoundAnswer);
       })
 
-      socket.on('gtw - round score', (data)=> {
+      socket.on('gtw - round score', async (data)=> {
+        scoreForThisRound = 0;
         if(data.team === 'Green'){
-          if(GTW_PLAYERS[thisGTW].lastTeam === 'Green'){
-            GTW_PLAYERS[thisGTW].score += 2;
+          if(GTW_PLAYERS[thisGTW]?.lastTeam === 'Green' || false){
+            scoreForThisRound += 2;
           } else {
-            GTW_PLAYERS[thisGTW].score += 1;
+            scoreForThisRound += 1;
           }
           GTW_PLAYERS[thisGTW].lastTeam = 'Green'
+         // Determine Leaderboard Scores
+        let recentScore = (await db.all(`SELECT score FROM gtwleaderboard WHERE player="${data.player}"`))[0].score;
+        console.log({recentScore});
+        await db.exec(`UPDATE gtwleaderboard SET score=${recentScore+scoreForThisRound} WHERE player="${data.player}"`);
         } else {
-          GTW_PLAYERS[thisGTW].lastTeam = 'Orange' 
+          GTW_PLAYERS[thisGTW].lastTeam = 'Orange'
         }
-        socketIO.emit('gtw - leaderboard', GTW_PLAYERS);
+          
+          console.log('about to update team');
+        await db.exec(`UPDATE gtwleaderboard SET currentTeam="${GTW_PLAYERS[thisGTW].lastTeam}" WHERE player="${data.player}"`);
+
+        // Trigger Leaderboard Update on Clients
+        mostRecentScore = await db.all('SELECT * FROM gtwleaderboard');
+        console.log({mostRecentScore})
+        socketIO.emit('gtw - leaderboardUpdate',mostRecentScore.sort((x,y)=>y.score-x.score))       
       })
 
       socket.on('gtw - round start', (data)=>{
