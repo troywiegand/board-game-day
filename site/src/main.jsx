@@ -7,7 +7,8 @@ import Home from './Home.jsx';
 import HomeBar from './HomeBar.jsx';
 import './index.css'
 import './App.css'
-
+import { events } from 'board-game-day-server/events';
+console.log({ events });
 import socketIO from 'socket.io-client';
 const socket = socketIO.connect(import.meta.env.VITE_SERVER);
 

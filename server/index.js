@@ -1,36 +1,40 @@
-require('dotenv').config();
+import {config} from 'dotenv';
+config();
 
-let sqlite3 = require('sqlite3');
-let sqlite = require('sqlite');
+import sqlite3 from 'sqlite3';
+import {open as sqliteOpen} from 'sqlite';
 // this is a top-level await 
 let db = null;
 (async () => {
   // open the database
-  db = await sqlite.open({
+  db = await sqliteOpen({
     filename: './score.sqlite',
     driver: sqlite3.Database
   })
 })()
-const express = require('express');
+import express from 'express';
 const app = express();
 const PORT = 4000;
 
 //New imports
-const http = require('http').Server(app);
-const cors = require('cors');
-const { Socket } = require('socket.io');
+import http from 'http';
+const httpServer = http.Server(app);
+import cors from 'cors';
+import { Server } from 'socket.io';
 
-corsSite = process.env.SITE;
+const corsSite = process.env.SITE;
 
 console.log(corsSite);
 
 app.use(cors());
 
-const socketIO = require('socket.io')(http, {
+const socketIO = new Server(httpServer, {
     cors: {
         origin: corsSite
     }
 });
+
+import { events } from './src/events.js';
 
 const games = {};
 // {name, points}
@@ -181,6 +185,6 @@ app.get('/api', (req, res) => {
   });
 });
 
-http.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
 });
