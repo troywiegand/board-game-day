@@ -1,67 +1,130 @@
 import { useState, useEffect } from "react";
 import { Link } from 'react-router';
+import { events, data } from 'board-game-day-server/events';
 
 function Gtw({socket, user}) {
 
-    const [inTheGame, setInTheGame] = useState(user || false);
-    const [thisRoundAnswer, setThisRoundAnswer] = useState('');
+    const [inTheGame, setInTheGame] = useState(user!=='' || false);
+    const [myAnswer, setMyAnswer] = useState('');
     const [roundAnswers, setRoundAnswers] = useState([]);
     const [leaderboard, setLeaderboard] = useState([]);
     const [currentTeam, setCurrentTeam] = useState('Orange');
     const [canSubmitScore, setCanSubmitScore] = useState(false);
+    const [currentGameState, setCurrentGameState] = useState('');
+    //TO-DO: Populate this from server
+    const isAdmin = (user === 'Troy' || user === 'Haley');
 
     useEffect(()=>{
-        socket.on('gtw - send', (data) => {
-            console.log('getting answers')
-            console.log(data);
-            setRoundAnswers(data);
-            setCanSubmitScore(true);
-        })
-
-        socket.on('gtw - leaderboardUpdate', (data) => {
-            console.log('LEADERBOARD: ',data,Object.values(data))
-            setLeaderboard(Object.values(data))
-        })
-
-        socket.on('gtw - reset round', (data) => {
-            setThisRoundAnswer('');
-            setRoundAnswers([]);
+        socket.on(events.GTW.GAME_UPDATE, (d) => {
+            switch(d.type){
+                case data.GTW.GAME_STATE:
+                    console.log("GS UPDATE", d);
+                    setCurrentGameState(d.gameState);
+                    break;
+                case data.GTW.PROMPT:
+                    // Update the Prompt (And Type)
+                    break;
+                case data.GTW.SUBMITTED:
+                    // Submitted Count / Did I submit Info
+                    break;
+                case data.GTW.ANSWERS:
+                    // Show Displayed Answers
+                    break;
+                case data.GTW.LEADERBOARD:
+                    // Update the leaderboard / Active Players
+                    break;
+                default:
+                    console.log(`ERROR: Client can not handle type ${d.type}`);
+            }
         })
 
         return () => {
-            socket.off('gtw - send');
-            socket.off('gtw - leaderboard');
-            socket.off('gtw - reset round');
+            socket.off(events.GTW.GAME_UPDATE);
         };
     },[socket,setRoundAnswers,setLeaderboard])
 
 
     useEffect(()=>{
-        socket.emit('gtw - join', {
-            player: user
-        });
-        setInTheGame(true);
-    },[socket,user]);
+            if (user!=='') {
+            socket.emit(events.GTW.JOIN_GAME, {
+                player: user
+            });
+            setInTheGame(true);
+            } else {
+            setInTheGame(false);
+            }
+    },[socket,user,setInTheGame]);
+
+    // Every Player
 
     const submitRoundAnswer = () => {
-        socket.emit('gtw - collect',{thisRoundAnswer});
+        socket.emit(events.GTW.SUBMIT,{
+            type: data.GTW.SUBMITTED,
+            myAnswer
+        });
     }
-
-    const endRound = () => {
-        socket.emit('gtw - round end');
-    }
-
-    const startRound = () => {
-        socket.emit('gtw - round start');
-    }
-
+    
     const scoreAnswer = (gOrO) => {
         return () => {
             setCurrentTeam(gOrO);
-            socket.emit('gtw - round score', {player: user, team: gOrO});
+            socket.emit(events.GTW.SUBMIT, {
+                type: data.GTW.LEADERBOARD,
+                player: user, 
+                team: gOrO
+            });
             setCanSubmitScore(false);
         }
     }
+
+    // Captain Emits
+    
+    const sendPrompt = () => {
+        return () => {
+            socket.emit(events.GTW.SUBMIT, {
+                type: data.GTW.PROMPT,
+                player: user, 
+            });
+        }
+    }
+    
+    const showAnswers = () => {
+        return () => {
+            socket.emit(events.GTW.SUBMIT, {
+                type: data.GTW.ANSWERS,
+                player: user, 
+            });
+        }
+    }
+
+
+    // ADMIN COMMANDS
+
+    // Captain can End a Round
+    // An Admin Then Determines if there's to be more play
+    const endRound = () => {
+        if (isAdmin || isCaptain) {
+
+        }
+    };
+
+    const startRound = () => {
+        if (isAdmin) {
+            socket.emit(events.GTW.ADMIN_COMMANDS, {
+                type: data.GTW.ADMIN.START_ROUND,
+                "message": "Hi from server"
+            });
+        }
+    };
+    
+    const endGame = () => {
+        if (isAdmin) {
+
+        }
+    };
+
+    // If Game is Over we can reset it or score it
+
+    // TO-DO Add Those Event Handlers
 
     return (<>
         <h1>Green Team Wins</h1>
@@ -69,15 +132,19 @@ function Gtw({socket, user}) {
             <Link to='/'><div className='card game'><h2>Log in at Home page</h2></div></Link>
         </>}
 
+        {inTheGame && isAdmin && <><div className="score-maker">
+            <h3>Admin Controls</h3>
+            {currentGameState===data.GTW.ADMIN.RESET_GAME && <button onClick={startRound}>Start Game</button>}
+            {currentGameState===data.GTW.ADMIN.START_ROUND && <button  onClick={endRound}>Show Answers</button>}
+            {currentGameState===data.GTW.ADMIN.END_ROUND && <button  onClick={startRound}>New Round</button>}
+            {currentGameState===data.GTW.ADMIN.END_ROUND && <button  onClick={endGame}>End Game</button>}
+            {currentGameState===data.GTW.ADMIN.END_GAME && <button  onClick={scoreGame}>Score Game</button>}
+            {currentGameState===data.GTW.ADMIN.END_GAME && <button  onClick={startRound}>Start New Game</button>} 
+        </div></>}
 
         {inTheGame && <><div className="score-maker">
             <p>On the {currentTeam} Team</p>
-            {inTheGame && (user==='Troy' || user==='Haley') && <>
-            <h3>Admin Controls</h3>
-            <button onClick={startRound}>Start Round</button><button  onClick={endRound} >Show Answers</button>
-            <h3>Normal Game</h3>
-            </>}
-            <textarea value={thisRoundAnswer} onChange={e=>setThisRoundAnswer(e.target.value)}></textarea>
+            <textarea value={myAnswer} onChange={e=>setMyAnswer(e.target.value)}></textarea>
             <button onClick={submitRoundAnswer}>Submit Answer</button>
             <div className="card location">
                 <h3>See Submitted Answers</h3>

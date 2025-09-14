@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 function Home({socket, loggedInAs, setLoggedInAs}) {
 
     const [whoAmI,setWhoAmI] = useState('');
-    const [people,setPeople] = useState([]);
+    const [people,setPeople] = useState(['Troy','Twix']);
 
     const joinTheGame = () => {
         setLoggedInAs(whoAmI);

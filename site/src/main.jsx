@@ -10,22 +10,23 @@ import './App.css'
 import { events } from 'board-game-day-server/events';
 console.log({ events });
 import socketIO from 'socket.io-client';
-const socket = socketIO.connect(import.meta.env.VITE_SERVER);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <GameRoutes socket={socket}/>
+      <GameRoutes/>
     </BrowserRouter>
   </React.StrictMode>,
 )
 
 
-function GameRoutes({socket}) {
+function GameRoutes() {
 
     const [loggedInAs, setLoggedInAs] = useState('');
     const [activePlayers, setActivePlayers] = useState([]);
     const [possiblePlayers, setPossiblePlayers] = useState([]);
+    
+    const socket = socketIO.connect(import.meta.env.VITE_SERVER);
 
     useEffect(() => {
 
@@ -49,13 +50,13 @@ function GameRoutes({socket}) {
 
     const loginHelper = (name) => {
             if (name === '') {
-                socket.emit('bgd - logoff', {player: name});
+                socket.emit(events.LOGOUT, {player: name});
                 setLoggedInAs('');
             }
             else if (activePlayers.includes(name)){
                 console.log(name, ' name already taken');
             } else {
-                socket.emit('bgd - login', {player: name});
+                socket.emit(events.LOGIN, {player: name});
                 setLoggedInAs(name);
             }
     }

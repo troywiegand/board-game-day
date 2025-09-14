@@ -4,6 +4,10 @@ const data = {};
 
 // The event from SocketIO when a client connects
 events.CONNECTION = 'connection';
+events.DISCONNECT = 'disconnect';
+
+events.LOGIN = 'login';
+events.LOGOUT = 'logout';
 
 // Get Updates about potential players
 // Anyone that might be at this game
@@ -57,18 +61,21 @@ events.GTW.ROOM = 'gtw-room';
 
 // Fired when you hit a button on page.
 // Adds you to the gtw-room
-events.GTW_JOIN_GAME = 'gtw-join_game';
+events.GTW.JOIN_GAME = 'gtw-join_game';
 
 // When in GTW ROOM
 // Prompt, # submitted, answers
 // When Not in GTW ROOM Leaderboard Info data { type: "leaderboard", leaderboard: {} }
+// This for the clients to recieve goodies
 events.GTW.GAME_UPDATE = 'gtw-game_update';
 
 data.GTW.PROMPT = 'gtw-prompt'; // promptType enum, promptQuestion string, promptAnswers []string ?
 data.GTW.SUBMITTED = 'gtw-submitted'; // submittedCount num, playerCount num
 data.GTW.ANSWERS = 'gtw-answers'; // answers []string, mostPopular string
 data.GTW.LEADERBOARD = 'gtw-leaderboard'; // players []{name string, score num}
+data.GTW.GAME_STATE = 'gtw-game_state';
 
+//This is for the clients to give updates to the server
 events.GTW.SUBMIT = 'gtw-submit';
 
 events.GTW.ADMIN_COMMANDS = 'gtw-admin_commands';
@@ -77,7 +84,7 @@ data.GTW.ADMIN = {};
 
 data.GTW.ADMIN.RESET_GAME = 'gtw-admin-reset_game';
 data.GTW.ADMIN.START_ROUND = 'gtw-admin-start_round'; // promptType enum, promptQuestion string
-data.GTW.ADMIN.NEW_ROUND = 'gtw-admin-new_round';
+data.GTW.ADMIN.END_ROUND = 'gtw-admin-new_round';
 data.GTW.ADMIN.END_GAME = 'gtw-admin-end_game';
 data.GTW.ADMIN.SCORE_GAME = 'gtw-admin-score_game';
 
