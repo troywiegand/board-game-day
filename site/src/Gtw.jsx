@@ -9,8 +9,11 @@ function Gtw({socket, user}) {
     const [roundAnswers, setRoundAnswers] = useState([]);
     const [leaderboard, setLeaderboard] = useState([]);
     const [currentTeam, setCurrentTeam] = useState('Orange');
+    const [hasSubmit, setHasSubmit] = useState(false);
     const [canSubmitScore, setCanSubmitScore] = useState(false);
     const [currentGameState, setCurrentGameState] = useState('');
+    const [submittedCount, setSubmittedCount] = useState(0);
+    const [playerCount, setPlayerCount] = useState(0);
     //TO-DO: Populate this from server
     const isAdmin = (user === 'Troy' || user === 'Haley');
 
@@ -20,12 +23,19 @@ function Gtw({socket, user}) {
                 case data.GTW.GAME_STATE:
                     console.log("GS UPDATE", d);
                     setCurrentGameState(d.gameState);
+                    if (d.gameState === data.GTW.ADMIN.END_ROUND){
+                        setCanSubmitScore(true);
+                    }
+                    // Certain Game States should cause certain game state to change
                     break;
                 case data.GTW.PROMPT:
                     // Update the Prompt (And Type)
                     break;
                 case data.GTW.SUBMITTED:
                     // Submitted Count / Did I submit Info
+                    console.log("SUB UPDATE", d);
+                    setSubmittedCount(d.data.submittedCount);
+                    setPlayerCount(d.data.playerCount);
                     break;
                 case data.GTW.ANSWERS:
                     // Show Displayed Answers
@@ -62,6 +72,7 @@ function Gtw({socket, user}) {
             type: data.GTW.SUBMITTED,
             myAnswer
         });
+        setHasSubmit(true);
     }
     
     const scoreAnswer = (gOrO) => {
@@ -103,7 +114,11 @@ function Gtw({socket, user}) {
     // An Admin Then Determines if there's to be more play
     const endRound = () => {
         if (isAdmin || isCaptain) {
-
+            socket.emit(events.GTW.ADMIN_COMMANDS, {
+                type: data.GTW.ADMIN.END_ROUND,
+                "message": "Hi from server"
+            });
+            
         }
     };
 
@@ -135,7 +150,7 @@ function Gtw({socket, user}) {
         {inTheGame && isAdmin && <><div className="score-maker">
             <h3>Admin Controls</h3>
             {currentGameState===data.GTW.ADMIN.RESET_GAME && <button onClick={startRound}>Start Game</button>}
-            {currentGameState===data.GTW.ADMIN.START_ROUND && <button  onClick={endRound}>Show Answers</button>}
+            {currentGameState===data.GTW.ADMIN.START_ROUND && <><p>Player(s) Submitted: {submittedCount} / {playerCount}</p><button  onClick={endRound}>Show Answers</button></>}
             {currentGameState===data.GTW.ADMIN.END_ROUND && <button  onClick={startRound}>New Round</button>}
             {currentGameState===data.GTW.ADMIN.END_ROUND && <button  onClick={endGame}>End Game</button>}
             {currentGameState===data.GTW.ADMIN.END_GAME && <button  onClick={scoreGame}>Score Game</button>}
@@ -144,14 +159,19 @@ function Gtw({socket, user}) {
 
         {inTheGame && <><div className="score-maker">
             <p>On the {currentTeam} Team</p>
+            {currentGameState===data.GTW.ADMIN.START_ROUND && !hasSubmit && <>
             <textarea value={myAnswer} onChange={e=>setMyAnswer(e.target.value)}></textarea>
             <button onClick={submitRoundAnswer}>Submit Answer</button>
-            <div className="card location">
+            </>}
+            {currentGameState===data.GTW.ADMIN.START_ROUND && hasSubmit && <>
+                    <p>Answer Submitted!</p>
+            </>}
+            {currentGameState===data.GTW.ADMIN.END_ROUND && <div className="card location">
                 <h3>See Submitted Answers</h3>
             {roundAnswers.map(ans=>(<div key={ans}>
             <p>{ans}</p>
             </div>))}
-            </div>
+            </div>}
             {canSubmitScore && <><button onClick={scoreAnswer('Green')}>Green</button> <button onClick={scoreAnswer('Orange')}>Orange</button></>}
         </div>
         <div className="leaderboard">

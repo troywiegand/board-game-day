@@ -37,18 +37,30 @@ const socketIO = new Server(httpServer, {
 import { events } from './src/events.js';
 import GTW from './src/GTW.js';
 
+const allPlayers = {};
+
+const removePlayer = (socketID) => {
+  delete allPlayers[socketID];
+}
+
 //Add this before the app.get() block
 socketIO.on('connection', async (socket) => {
     console.log(`⚡: ${socket.id} user just connected!`);
 
     socket.on(events.LOGIN, (d) => {
         socket.data.player = d.player;
+        allPlayers[socket.id] = {player: d.player};
         //console.log({d, sdp: socket.data.player});
     });
     
     GTW.Sockets(socketIO, socket);
+    
+    socket.on(events.LOGOUT, () => {
+      removePlayer(socket.id);
+    });
 
     socket.on('disconnect', () => {
+      removePlayer(socket.id);
       console.log('🔥: A user disconnected', socket.id);
     });
 });

@@ -12,6 +12,19 @@ static removePlayer = (socketID, socketIO) => {
 };
 
 static Sockets = (socketIO, socket) => {
+    
+    const emitSubmittedPlayers = () => {
+        const playerCount = Object.keys(this.players).length;
+        const submittedCount = Object.values(this.players).reduce(
+            (acc, cv) => acc + (cv.myAnswer!==null ? 1 : 0),
+        0);
+        socketIO.emit(events.GTW.GAME_UPDATE, {
+            type: data.GTW.SUBMITTED, 
+            data: {playerCount, submittedCount},
+        });
+
+        return {playerCount, submittedCount}
+    };
 
     socket.on(events.GTW.JOIN_GAME, (d)=>{
         console.log("gtw - join game");
@@ -33,19 +46,21 @@ static Sockets = (socketIO, socket) => {
 
     socket.on(events.GTW.SUBMIT, (d)=>{
         const submissionType = d.type;
-        switch(submissionType){
-            
+        switch(submissionType){     
             case data.GTW.PROMPT:
                 console.log("Recieved Prompt from Captain");
                 break;
             case data.GTW.SUBMITTED:
-                console.log("Recieved Submission of Player");
+                console.log(`Recieved Submission from ${JSON.stringify(this.players[socket.id])}: ${d.myAnswer}`);
+                this.players[socket.id].myAnswer = d.myAnswer;
+                console.log(this.players);
+                emitSubmittedPlayers();
                 break;
             case data.GTW.ANSWERS:
                 console.log("Captain wants to see Answers");
                 break;
             case data.GTW.LEADERBOARD:
-                console.log("Player was on the BLANK team");
+                console.log("Player was on the BLANK team", {d} );
                 break;
             default:
                 console.log(`ERROR: The submission ${submissionType} is not valid.`);
@@ -66,9 +81,15 @@ static Sockets = (socketIO, socket) => {
                     type: data.GTW.GAME_STATE,
                     gameState: data.GTW.ADMIN.START_ROUND
                 });
+                Object.keys(this.players).forEach((p)=>this.players[p].myAnswer=null);
                 break;
             case commands.END_ROUND:
                 console.log('End Round');
+                emitSubmittedPlayers();
+                socketIO.emit(events.GTW.GAME_UPDATE, {
+                    type: data.GTW.GAME_STATE,
+                    gameState: data.GTW.ADMIN.END_ROUND
+                });
                 break;
             case commands.END_GAME:
                 console.log('Ending Game');
@@ -83,6 +104,10 @@ static Sockets = (socketIO, socket) => {
 
     });
 
+
+    socket.on(events.LOGOUT, (d) => {
+        this.removePlayer(socket.id, socketIO);
+    });
 
     socket.on(events.DISCONNECT, (d) => {
         this.removePlayer(socket.id, socketIO);

@@ -41,7 +41,7 @@ function GameRoutes() {
         })
 
         return () => {
-            loggedInAs !== '' && socket.emit('bgd - logoff', {player: loggedInAs});
+            loggedInAs !== '' && socket.emit(events.LOGOUT, {player: loggedInAs});
             socket.off('bgd - players');
         }
 
