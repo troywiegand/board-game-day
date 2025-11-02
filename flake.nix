@@ -11,6 +11,10 @@
         buildInputs = with pkgs; [
           nodejs
         ];
+
+        shellHook = ''
+          export name="";
+        '';
       };
     }
   );
