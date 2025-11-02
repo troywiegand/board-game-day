@@ -9,11 +9,12 @@
         name = "board-game-day";
 
         buildInputs = with pkgs; [
-          nodejs
+          bun
         ];
 
         shellHook = ''
           export name="";
+          export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib";
         '';
       };
     }
